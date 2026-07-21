@@ -1,0 +1,120 @@
+请为 GridCons Figure 1 选择一个可审计的真实 Task04 病例，并导出供网页版排版的图像包。不要修改论文，不要生成最终 Figure 1。
+
+数据和结果路径由你从当前 canonical GridCons 项目中定位。不得使用正在运行的 DualGrid-Sup 中间结果。
+
+固定选择规则：
+
+1. 只使用论文已经报告的 frozen Task04 40-case、5-seed结果；
+2. 固定 backbone 为 Dynamic Mamba；
+3. 对每个 case，计算现有 Dynamic Mamba baseline 在五个 seeds 上的平均 R2 prediction consistency；
+4. 按该均值排序；
+5. 选择最接近中位数的 case；
+6. 可视化固定使用 seed 17；
+7. 在该病例中，选择 R1 foreground label 面积最大的轴向切片；
+8. 不得根据 GridCons improvement 挑病例或切片；
+9. 不得选择最好成功案例；
+10. 不得读取 DualGrid-Sup 的运行中结果。
+
+如果缺少 case-level metrics、预测文件或物理空间映射信息，停止：
+
+FIGURE1_EXPORT_STATUS=BLOCKED_MISSING_EVIDENCE
+
+不得伪造或重新训练。
+
+输出目录：
+
+<canonical_project_parent>/GridCons_Figure1_WebUpload
+
+生成以下文件：
+
+1. panel_A_R1.png
+   - 真实 R1 MRI 切片；
+   - 相同物理 crop；
+   - 显示真实 foreground label 轮廓；
+   - 添加 10 mm scale bar；
+   - 不显示患者身份。
+
+2. panel_B_R2.png
+   - 同一病例、同一物理位置的 R2 切片；
+   - 映射到与 Panel A 可直接比较的物理视野；
+   - 使用相同 intensity window；
+   - 标注真实 spacing；
+   - 不改变医学内容。
+
+3. panel_C_baseline_drift.png
+   - Dynamic Mamba seed 17；
+   - R1 prediction：蓝色实线；
+   - aligned R2 prediction：橙色虚线；
+   - disagreement：半透明 vermillion；
+   - 显示该病例真实 R2 consistency；
+   - 数值必须从原始 metrics 读取并交叉验证。
+
+4. panel_D_gridcons.png
+   - Dynamic Mamba + GridCons seed 17；
+   - 与 Panel C 使用完全相同的切片、crop、window 和物理坐标；
+   - R1 prediction：蓝色实线；
+   - aligned R2 prediction：bluish-green 虚线；
+   - disagreement 使用与 Panel C 相同定义；
+   - 显示真实 R2 consistency；
+   - 不允许修改预测轮廓。
+
+5. figure1_contact_sheet.png
+   - 将 A–D 四个 panel 等尺寸横向排列；
+   - 仅用于网页版预览；
+   - 不作为最终论文图。
+
+6. figure1_provenance.md
+   记录：
+   - 匿名 case ID；
+   - split；
+   - 固定 backbone 和 seed；
+   - 病例选择规则；
+   - slice index 和物理坐标；
+   - image、label、prediction、metrics 文件 SHA-256；
+   - R1/R2 spacing；
+   - crop bounds；
+   - intensity window；
+   - baseline 和 GridCons case-level consistency；
+   - checkpoint 标识；
+   - 映射与插值方法。
+
+7. method_strip.svg
+   使用矢量方式制作紧凑流程：
+   paired-grid training:
+   R1 + label → shared network → supervised loss
+   R2 same case → shared network → physical alignment → consistency with stop-gradient R1
+
+   single-branch inference:
+   one input grid → shared network → segmentation
+
+医学图像完整性要求：
+
+- 允许 windowing、确定性 crop、物理空间映射和轮廓叠加；
+- 禁止生成、修补、锐化或重绘医学图像；
+- 禁止修改标签或预测；
+- 禁止生成式去噪、inpainting 和 anatomy enhancement；
+- 禁止扩大 prediction disagreement；
+- 所有 panel 必须来自真实文件；
+- 输出医学 panel 采用至少 600×600 px；
+- panel 内字体最终不小于 18 px；
+- 不使用装饰背景。
+
+若 GPU 正在训练且导出需要新推理，不得抢占 GPU。此时停止：
+
+FIGURE1_EXPORT_STATUS=BLOCKED_GPU_BUSY
+
+最终只报告：
+
+FIGURE1_EXPORT_STATUS=
+OUTPUT_DIR=
+ANON_CASE_ID=
+SELECTION_RULE=
+DISPLAY_SEED=17
+SLICE_INDEX=
+BASELINE_CASE_CONSISTENCY=
+GRIDCONS_CASE_CONSISTENCY=
+CONTACT_SHEET=
+PROVENANCE_FILE=
+MEDICAL_PIXELS_GENERATED=false
+LABELS_OR_PREDICTIONS_EDITED=false
+DUALGRID_RESULTS_USED=false
