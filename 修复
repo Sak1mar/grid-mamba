@@ -1,0 +1,74 @@
+请修复 GridCons Figure 1 导出包中的 architecture-matching 错误。
+
+当前包：
+/home/yanjingjia/GridCons_Figure1_WebUpload
+
+新输出目录：
+/home/yanjingjia/GridCons_Figure1_WebUpload_v2
+
+不得覆盖 v1。
+
+已确认错误：
+
+- Panel C 使用 dynamic_delta / content_delta baseline；
+- Panel D 错误使用 gridcons_mamba / separated_physical_delta；
+- Panel D 被错误标记为 Dynamic Mamba + GridCons；
+- 当前 0.842206 不是 architecture-matched Dynamic Mamba + GridCons 数值。
+
+正确 Panel D 必须使用：
+
+- arm：dynamic_delta_consistency
+- parameterization：content_delta
+- case：hippocampus_104
+- seed：17
+- frozen anterior consistency：0.8585199886589169
+- frozen posterior consistency：0.8570668086239020
+- frozen class mean：0.8577933986414094
+
+执行要求：
+
+1. 从 control-matrix manifest 中定位 dynamic_delta_consistency seed17 的精确 checkpoint；
+2. 验证 checkpoint arm、parameterization、seed 和 SHA-256；
+3. 使用原评估实现执行 R1/R2 forward-only inference；
+4. 禁止训练、backward、optimizer、调参和 post-processing；
+5. 复算两个类别的 consistency，必须与 frozen metrics 对应；
+6. 使用与 Panel C 完全相同的：
+   - case；
+   - slice 15；
+   - physical crop；
+   - intensity window；
+   - R1/R2 mapping；
+   - disagreement definition；
+7. 重新生成 panel_D_gridcons.png；
+8. 标题保留：
+   Dynamic Mamba + GridCons · seed 17
+9. 显示正确 class mean：
+   0.857793
+10. 更新 predictions_seed17.npz：
+    - 将错误的 gridcons_* arrays 替换为 dynamic_delta_consistency 的数组；
+    - key 名改成 dynamic_gridcons_*，避免歧义；
+11. 更新 figure1_provenance.md：
+    - arm 必须为 dynamic_delta_consistency；
+    - parameterization 必须为 content_delta；
+    - 删除错误的 separated_physical_delta/GridCons checkpoint 记录；
+12. 重新生成 contact sheet 和所有 SHA-256；
+13. A/B/C、method_strip.svg 的医学内容不得改变。
+
+最终生成：
+
+/home/yanjingjia/GridCons_Figure1_WebUpload_v2.zip
+
+最终报告：
+
+FIGURE1_REPAIR_STATUS=
+BASELINE_ARM=dynamic_delta
+GRIDCONS_ARM=dynamic_delta_consistency
+ARCHITECTURE_MATCHED=true
+PARAMETERIZATION_MATCHED=true
+STORED_CLASS_MEAN=0.8577933986414094
+RECOMPUTED_CLASS_MEAN=
+MAX_ABS_METRIC_ERROR=
+TRAINING_RUN=false
+DUALGRID_RESULTS_USED=false
+OUTPUT_ZIP=
+OUTPUT_ZIP_SHA256=
