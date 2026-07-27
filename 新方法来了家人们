@@ -1,0 +1,192 @@
+  你是一名长期担任 CCF-B/C、MICCAI、IEEE TMI、Medical Image Analysis 审稿人的医
+  学图像分析研究者。请基于我提供的 GridCons_Severity_Writing_Pack_20260727，撰写
+  一篇完整、严谨、可投稿的英文方法论文。
+
+  【论文定位】
+
+  这是一篇新的训练方法论文，而不是新 backbone 论文。
+
+  方法名称：
+  Severity-Selected Native-Grid Consistency（SS-NGC）
+
+  推荐标题：
+  Severity-Selected Native-Grid Consistency for Stable 3D Medical Image
+  Segmentation Across Voxel Spacings
+
+  核心问题：
+  同一个三维解剖在不同 voxel spacing 和 native tensor grids 上输入时，3D 分割模
+  型的预测会发生显著变化。本文研究如何在不损害 native-grid accuracy 的前提下，提
+  高模型在连续、尤其是训练范围外 voxel spacings 上的稳定性。
+
+  核心方法：
+  训练时从连续 spacing 区间采样两个原生候选网格，将模型预测映射回参考 R1 网格，
+  并根据候选 spacing 的物理严重度选择更严重的候选，对其施加 posterior
+  consistency loss。选择过程只使用 requested spacing，不读取标签、预测误差、梯
+  度、置信度或候选性能。
+
+  【必须首先阅读的材料】
+
+  1. 02_MANUSCRIPT/main_draft_en.md
+  2. 01_POSITIONING/CANONICAL_FACT_SHEET.md
+  3. 01_POSITIONING/CLAIM_EVIDENCE_MATRIX.md
+  4. 01_POSITIONING/PAPER_BLUEPRINT_ZH.md
+  5. 05_METHODS_AND_STATS/STATISTICS.md
+  6. 05_METHODS_AND_STATS/SPLITS_AND_LEAKAGE.md
+  7. 06_EVIDENCE/ 下的 source audit、confirm_v2、Task09 external replication 结
+  果
+  8. 表格、图注、补充材料规划和参考文献文件
+
+  这些材料是唯一事实来源。不得编造实验、数据、指标、模型配置、参考文献或统计显著
+  性。如果不同文件之间存在冲突，以 CANONICAL_FACT_SHEET.md 和最终验证报告为准。
+
+  【论文主张】
+
+  论文必须围绕以下逻辑组织：
+
+  1. 连续 voxel-grid stability 是区别于普通 native-grid segmentation accuracy 的
+  独立问题。
+  2. 受控机制审计表明，真正的 native-grid exposure 是稳定性提升的重要来源，而固
+  定张量上的 degradation 不能替代它。
+  3. R1-posterior consistency 优于 candidate-grid label supervision。
+  4. 基于上述发现，提出 SS-NGC：直接选择物理 spacing 更严重的候选，而不是使用瞬
+  时 prediction disagreement 做 loss-adaptive weighting。
+  5. SS-NGC 相对 mean consistency baseline C 的优势已经在冻结的五种子确认实验中
+  得到支持。
+  6. SS-NGC 相对 soft-worst D 的优势没有被独立确认，因此不得声称 SS-NGC 显著优于
+  D。
+  7. Task09 Spleen + Plain 3D U-Net 的三个种子方向均为正，但置信区间跨零，只能作
+  为方向一致的外部支持。
+  8. 本文研究的是受控 voxel-grid stability，不得扩展为对真实医院、扫描协议、设备
+  变化或异构临床 domain shift 的全面鲁棒性结论。
+
+  【必须准确使用的核心结果】
+
+  - Random-K2 − Degrade-on-R1 Extra Dmap：
+    +0.33970，crossed 95% CI [+0.29052, +0.38837]。
+
+  - Random-K2 − Label-supervised-random Extra Dmap：
+    +0.07983，crossed 95% CI [+0.06756, +0.09187]。
+
+  - Frozen confirm_v2，SS-NGC S − mean consistency C：
+    Extra Dmap +0.03436，crossed 95% CI [+0.01013, +0.05824]。
+
+  - Frozen confirm_v2，S − C native Dice：
+    +0.00012，95% CI [−0.00247, +0.00255]；
+    通过 −0.005 noninferiority margin。
+
+  - Frozen confirm_v2，S − soft-worst D：
+    Extra Dmap +0.00443，95% CI [−0.02495, +0.03387]；
+    结果不确定，不得写成显著优势。
+
+  - Task09 Spleen + Plain 3D U-Net，S − C：
+    Extra Dmap +0.01996，95% CI [−0.00189, +0.03885]；
+    三个种子方向均为正，但区间跨零。
+
+  【贡献写法】
+
+  将贡献概括为四点：
+
+  1. Formulate continuous voxel-grid stability for 3D medical image
+  segmentation.
+  2. Identify native-grid exposure as a principal source of stability
+  improvement through controlled audits.
+  3. Propose Severity-Selected Native-Grid Consistency, a simple, architecture-
+  agnostic training strategy that prioritizes the physically more severe sampled
+  grid.
+  4. Validate the frozen method using multi-seed development experiments,
+  untouched five-seed confirmation, native-accuracy noninferiority testing, and
+  a joint external dataset/backbone replication.
+
+  不要使用“the first”或“state of the art”，除非提供的材料和参考文献能够严格支
+  持。
+
+  【写作结构】
+
+  请生成以下完整内容：
+
+  1. Title
+  2. Abstract，约 200–250 词
+  3. Introduction
+  4. Related Work
+  5. Problem Formulation and Stability Metrics
+  6. Severity-Selected Native-Grid Consistency
+  7. Experimental Setup
+  8. Controlled Source Audits
+  9. Development Results and Method Selection
+  10. Frozen Confirmation Results
+  11. External Dataset/Backbone Replication
+  12. Discussion
+  13. Limitations
+  14. Conclusion
+  15. Figure and table placement suggestions
+  16. Supplementary-material references
+
+  【方法部分要求】
+
+  - 明确定义参考网格 R1、候选网格 g1 和 g2。
+  - 写清 native-grid resampling、预测映射和 stop-gradient teacher。
+  - 正确定义候选 disagreement e1、e2。
+  - 定义 severity：
+    a_k = log(s_k / 1 mm) / log(3)。
+  - 定义：
+    k* = argmax(a1, a2)，L_aux = e_{k*}。
+  - spacing 相等时使用两个 disagreement 的平均值。
+  - 给出完整训练目标：
+    L = 0.5 L_Dice + 0.5 L_CE + λ(t)L_aux。
+  - 明确 severity 使用物理 spacing，而不是 tensor depth。
+  - 强调该方法不增加推理成本，也不修改 backbone。
+
+  【统计要求】
+
+  - 明确区分 development selection 和 untouched confirmation。
+  - 置信区间采用 crossed case × seed bootstrap。
+  - 不把 development interval 当作最终 confirmatory evidence。
+  - native performance 使用预设的 −0.005 noninferiority margin。
+  - 对所有跨零区间使用“不确定”“directionally positive but inconclusive”等准确措
+  辞。
+  - 不根据 p-value 或单个种子夸大结论。
+
+  【写作风格】
+
+  - 使用清晰、克制、审稿人友好的学术英语。
+  - 先写问题和证据，再介绍方法，避免营销式语言。
+  - 将方法的简单性写成由机制审计推导出的设计优势，而不是缺乏创新：
+    “The method is simple by design: once native-grid exposure is isolated as
+    the key factor, physical severity provides a direct selection signal without
+    relying on transient prediction disagreement.”
+  - 不反复使用 robust、generalizable、significant。
+  - 每个结论附近给出对应数字。
+  - Discussion 主动解释为什么简单的 severity signal 可能比 loss-adaptive
+  weighting 更稳定。
+  - 主动承认 5 mm 下绝对性能仍然有限。
+  - 保留所有负结果和不确定结果，不进行选择性汇报。
+
+  【禁止事项】
+
+  - 不得声称 SS-NGC 已被证明优于 soft-worst D。
+  - 不得把 Task09 结果写成统计显著。
+  - 不得声称解决 heterogeneous clinical robustness。
+  - 不得声称适用于所有 modality、dataset 或 backbone。
+  - 不得虚构额外实验、消融或 baseline。
+  - 不得擅自改变数据划分、种子数、训练配置和指标定义。
+  - 不得虚构引用；缺少引用时标记 [CITATION NEEDED]。
+  - 不得删除对研究局限性的讨论。
+
+  【输出要求】
+
+  首先给出一段不超过 150 词的“paper positioning rationale”，说明这篇论文为什么应
+  被视为一篇新方法论文。
+
+  然后输出完整英文论文。使用正式 Markdown 或 LaTeX 风格，公式可直接转换为
+  LaTeX。作者、单位、基金、伦理和代码地址使用明确占位符。
+
+  最后执行一次 reviewer-style consistency check，列出：
+  - 是否存在过度声称；
+  - 数字是否与事实表一致；
+  - development 与 confirmation 是否被正确分开；
+  - 是否误写了 S 相对 D 或 Task09 的统计结论；
+  - 哪些句子仍需作者提供引用或元数据。
+
+  不要只提供提纲，必须生成完整可编辑主稿。
+
+  如果是继续精修现有稿件，把最后一句换成：
